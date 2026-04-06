@@ -1,32 +1,42 @@
-# Softmax Experiments: Truth Jailbreak & Attentional Hijacking
+# Softmax Experiments: Attention Redistribution Under Prompt Framing
 
-Mechanistic interpretability experiments investigating how factually true context can hijack a transformer's attention mechanism, causing catastrophic suppression of ground-truth knowledge — a phenomenon we call the **"Truth Jailbreak."**
+Exploratory experiments investigating how emotionally charged but factually true context redistributes a transformer's attention, shifting next-token probability distributions.
 
-## Core Finding
+## Core Observation
 
-A 100% factually true "chaos message" can cause a **97.27% collapse** in ground-truth activation probability by starving attention to relevant tokens, without corrupting the model's internal representations (cosine similarity = 1.000).
+Adding high-salience framing tokens (e.g., WARNING, CRITICAL, UNSTABLE) to a prompt causes measurable shifts in attention allocation and next-token probabilities. Hidden states for prior tokens remain unchanged (as guaranteed by the causal mask in autoregressive transformers).
 
 ## Experiments
 
 | Script | What it tests |
 |--------|---------------|
 | `inspect_softmax.py` | Visualize the attention matrix and output softmax for a given prompt |
-| `nirenberg_experiment.py` | Measure token salience shift under neutral vs. chaos framing |
+| `nirenberg_experiment.py` | Measure token salience shift under neutral vs. charged framing |
 | `nirenberg_v3_rigorous.py` | Integrated attention analysis across all layers/heads |
-| `nirenberg_truth_jailbreak.ipynb` | Notebook: end-to-end truth jailbreak demonstration |
-| `hijack_experiment.py` | Quantify attention hijacking from last token to target tokens |
+| `nirenberg_truth_jailbreak.ipynb` | Notebook: end-to-end demonstration |
+| `hijack_experiment.py` | Quantify attention shift from last token to target tokens |
 | `activation_competition.py` | Measure head-level activation competition between competing facts |
 | `logit_suppression.py` | Track next-token probability shifts under adversarial framing |
-| `natural_completion.py` | Compare natural completions under neutral vs. chaos prompts |
-| `suppression_study.py` | Confirm hidden state integrity despite output suppression |
+| `natural_completion.py` | Compare natural completions under neutral vs. charged prompts |
+| `suppression_study.py` | Confirm hidden state invariance despite output probability shift |
 | `research_harness.py` | General-purpose attention analysis harness |
 
-## Key Results
+## Key Observations
 
-- **Representational Integrity:** Hidden states remain perfectly intact (cosine sim = 1.000)
-- **Attentional Starvation:** ~31% drop in attention to ground-truth tokens
-- **Output Suppression:** 97.27% collapse in target token probability
-- **Preference Inversion:** P/N ratio shifts from 2.98x to 0.77x
+- **Hidden State Invariance:** Prior-token hidden states unchanged (cosine sim = 1.000) — this is architecturally guaranteed by the causal mask, not a novel finding
+- **Attention Redistribution:** ~31% drop in attention to original target tokens (no length-matched control; may be partially explained by longer sequence)
+- **Probability Shift:** 87–97% drop in specific next-token probability depending on script/measurement
+- **Preference Shift:** P/N ratio moves from 2.98x to 0.77x
+
+## Limitations
+
+- **N=1 per condition.** No replication, no error bars, no statistical testing.
+- **No length-matched controls.** Charged prompts are longer than neutral prompts; some effect may be due to sequence length alone.
+- **No random-word baselines.** Cannot distinguish emotional-salience effects from generic prompt-extension effects.
+- **Single model only.** All scripts use GPT-2 base (124M). No other models tested.
+- **No ablation.** No systematic variation of which tokens drive the effect.
+
+These experiments are exploratory and do not support strong mechanistic or safety claims without proper controls and replication.
 
 ## Requirements
 
@@ -35,12 +45,12 @@ torch
 transformers
 ```
 
-Tested with GPT-2 (all experiments use `gpt2-medium` by default).
+All experiments use `gpt2` (124M base model).
 
 ## Reports
 
-- [`RESEARCH_SUMMARY_AI_SAFETY.md`](RESEARCH_SUMMARY_AI_SAFETY.md) — Summary for the AI safety community
-- [`TRUTH_JAILBREAK_REPORT.md`](TRUTH_JAILBREAK_REPORT.md) — Detailed technical report
+- [`RESEARCH_SUMMARY_AI_SAFETY.md`](RESEARCH_SUMMARY_AI_SAFETY.md) — Observations and preliminary interpretation
+- [`TRUTH_JAILBREAK_REPORT.md`](TRUTH_JAILBREAK_REPORT.md) — Detailed technical notes
 
 ## License
 
